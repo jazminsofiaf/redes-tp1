@@ -10,6 +10,30 @@ servers:
 
 # Paths servidos por la aplicación
 paths:
+  /api/domains/{domain}:
+    get:
+      operationId: "api.dns.get_ip"
+      tags:
+        - "DNS"
+      summary: "IP asociada a hostname"
+      description: "Obtiene la IP asociada"
+      parameters:
+        - in: path
+          name: domain
+          required: true
+          schema:
+            type: string
+          description: La ip del host a obtener
+      responses:
+        200:
+          description: "Operación de lectura exitosa"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Alumno'
+        404:
+          description: "No encontrado"
+
   /alumnos:
     get:
       operationId: "api.alumnos.obtener_todos"
@@ -92,6 +116,17 @@ paths:
 # Declaración de tipos de datos
 components:
   schemas:
+    Domain:
+      type: "object"
+      properties:
+        domain:
+          type: "string"
+        ip:
+          type: "string"
+        custom:
+          type: "boolean"
+
+
     Alumno:
       type: "object"
       properties:
