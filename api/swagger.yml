@@ -38,7 +38,7 @@ paths:
       operationId: "api.dns.all_custom_domains"
       tags:
         - "DNS"
-      summary: "Colección de custom domains"
+      summary: "Colección de custom domains filtrados segun parametro"
       description: "Obtiene la lista de todos los dominios del sistema"
       parameters:
         - in: query

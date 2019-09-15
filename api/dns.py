@@ -94,8 +94,7 @@ def new_custom_domain(**kwargs):
     return make_response(domain, 201)
 
 def delete_custom_domain(domain):
-        """
-        Esta funcion maneja el request DELETE /api/custom-domains/{domain}
+        """Esta funcion maneja el request DELETE /api/custom-domains/{domain}
 
         :return: 204 domain, 404 domain no encontrado
         """
@@ -104,4 +103,7 @@ def delete_custom_domain(domain):
 
         del domains[domain]
 
-        return make_response(domain, 204)
+        domain_deleted = {
+             'domain': domain
+        }
+        return make_response(domain_deleted, 200)
