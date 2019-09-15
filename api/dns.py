@@ -8,8 +8,8 @@ def resolveDNS(hostname):
     result = []
     for answer in dns.resolver.query(hostname, "A").response.answer:
         recodt_type = dns.rdatatype.to_text(answer.rdtype)
-        if(recodt_type != "A"):
-            continue
+        """if(recodt_type != "A"):
+            continue"""
         result.extend(re.findall(ip_regex, answer.to_text()))
     return result
 
@@ -62,7 +62,6 @@ def get_domain(domain):
         return make_response(domains[domain], 200)
 
     ip_list = get_ips(domain)
-    print(ip_list)
     if not ip_list:
         return abort(404, 'domain not found')
 
