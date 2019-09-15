@@ -1,22 +1,21 @@
 openapi: 3.0.0
 info:
   version: "1.0.0"
-  title: API de Alumnos
-  description: Documentación de la API de Alumnos de la materia 75.43 Introducción a Sistemas Distribuidos
-
+  title: API de DoH
+  description: Documentación de la API de DNS over HTTPs
 servers:
   - url: http://localhost:8080/api
     description: Servidor de desarrollo
 
 # Paths servidos por la aplicación
 paths:
-  /api/domains/{domain}:
+  /domains/{domain}:
     get:
-      operationId: "api.dns.get_ip"
+      operationId: "api.dns.get_domain"
       tags:
         - "DNS"
       summary: "IP asociada a hostname"
-      description: "Obtiene la IP asociada"
+      description: "Obtiene la IP asociada al domain name del host"
       parameters:
         - in: path
           name: domain
@@ -30,9 +29,83 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Alumno'
+                $ref: '#/components/schemas/Domain'
         404:
           description: "No encontrado"
+
+  /custom-domains:
+    get:
+      operationId: "api.dns.all_custom_domains"
+      tags:
+        - "DNS"
+      summary: "Colección de custom domains"
+      description: "Obtiene la lista de todos los dominios del sistema"
+      parameters:
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+          description: valor dentro del nombre de dominio por el cual filtrar
+      responses:
+        200:
+          description: "Operación de lectura exitosa"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Domain'
+    post:
+      operationId: "api.dns.new_custom_domain"
+      tags:
+        - "DNS"
+      summary: "Alta de un nuevo custom domain"
+      description: "Crea una entrada para sobreescribir la IP de un dominio en particular"
+      requestBody:
+        required: true
+        x-body-name: 'domain'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputCustomDomain'
+      responses:
+        201:
+          description: "Se creo el nuevo dominio correctamente"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Domain'
+        400:
+          description: "nombre de dominio duplicado"
+
+  /custom-domains/{domain}:
+    delete:
+      operationId: "api.dns.delete_custom_domain"
+      tags:
+        - "DNS"
+      summary: "Borrar custom domain"
+      description: "Borra un dominio existente en el sistema"
+      parameters:
+        - in: path
+          name: domain
+          required: true
+          schema:
+            type: string
+          description: El nombre del dominio a borrar
+      responses:
+        204:
+          description: "Operación de lectura exitosa"
+        404:
+          description: "Dominio no encontrado"
+
+
+
+
+
+
+
+
 
   /alumnos:
     get:
@@ -125,6 +198,13 @@ components:
           type: "string"
         custom:
           type: "boolean"
+    InputCustomDomain:
+      type: "object"
+      properties:
+        domain:
+          type: "string"
+        ip:
+          type: "string"
 
 
     Alumno:
