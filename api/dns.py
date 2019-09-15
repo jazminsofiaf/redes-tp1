@@ -87,16 +87,37 @@ def new_custom_domain(**kwargs):
         return abort(400, 'custom domain already exists')
 
     domain['custom'] = True
-    print(domain)
     domains[domain_name] = domain
-    print(domains)
 
     return make_response(domain, 201)
+
+def update_custom_domain(**kwargs):
+    """
+    Esta funcion maneja el request PUT /api/custom-domains/{domain}
+    :param: dominio a crear en la lista de custom domains
+    :return: 201 dominio creado, 400 dominio duplicado
+    """
+
+    domain = kwargs.get('body')
+    domain_name = domain.get('domain')
+    ip = domain.get('ip')
+
+    if not domain_name or not ip:
+        return abort(400, 'payload is invalid')
+
+    if not domain_name in domains.keys():
+        return abort(404, 'domain not found')
+
+
+    domain['custom'] = True
+    domains[domain_name] = domain
+
+    return make_response(domain, 200)
 
 def delete_custom_domain(domain):
         """Esta funcion maneja el request DELETE /api/custom-domains/{domain}
 
-        :return: 204 domain, 404 domain no encontrado
+        :return: 200 domain, 404 domain no encontrado
         """
         if domain not in domains:
             return abort(404, 'domain not found')

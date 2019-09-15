@@ -80,6 +80,32 @@ paths:
           description: "nombre de dominio duplicado"
 
   /custom-domains/{domain}:
+    put:
+      operationId: "api.dns.update_custom_domain"
+      tags:
+        - "DNS"
+      summary: "Editar custom domain"
+      description: "Edita un dominio ya existente en el sistema"
+      parameters:
+        - in: path
+          name: domain
+          required: true
+          schema:
+            type: string
+          description: El nombre del dominio a modificar
+      requestBody:
+        required: true
+        x-body-name: 'domain'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InputCustomDomain'
+      responses:
+        200:
+          description: "Operación de lectura exitosa"
+        404:
+          description: "Dominio no encontrado"
+
     delete:
       operationId: "api.dns.delete_custom_domain"
       tags:
@@ -94,7 +120,7 @@ paths:
             type: string
           description: El nombre del dominio a borrar
       responses:
-        204:
+        200:
           description: "Operación de lectura exitosa"
         404:
           description: "Dominio no encontrado"
