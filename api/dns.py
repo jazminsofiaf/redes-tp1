@@ -1,5 +1,8 @@
 from flask import abort, make_response
 import dns.resolver
+import re
+
+ip_regex = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
 
 def resolveDNS(hostname):
     result = []
@@ -7,7 +10,7 @@ def resolveDNS(hostname):
         recodt_type = dns.rdatatype.to_text(answer.rdtype)
         if(recodt_type != "A"):
             continue
-        result.extend(list(map(lambda x : x[len(x) - 15: len(x)], answer.to_text().split("\n"))))
+        result.extend(re.findall(ip_regex, answer.to_text()))
     return result
 
 
@@ -55,7 +58,11 @@ def get_domain(domain):
     Esta funcion maneja el request GET /api/domains/{domain}
     return: 200 IP asociado a un dominio en particular
     """
+    if(domain in domains.keys()):
+        return make_response(domains[domain], 200)
+
     ip_list = get_ips(domain)
+    print(ip_list)
     if not ip_list:
         return abort(404, 'domain not found')
 
@@ -63,7 +70,7 @@ def get_domain(domain):
     response  = {
         'domain': domain,
         'ip':  ip,
-        'custom': True
+        'custom': False
     }
     return make_response(response, 200)
 
