@@ -35,14 +35,18 @@ domains = {
     }
 }
 
-def all_custom_domains():
+def all_custom_domains(**kwargs):
     """
     Esta funcion maneja el request GET /api/custom-domains?q={filter}
 
     :return: 200 lista de todos los domains
     """
     # Create the list of people from our data
-    return list(domains.values())
+    result = list(domains.values())
+    substring = kwargs.get('q')
+    if(substring):
+        result = list(filter(lambda d: substring in d['domain'],result))
+    return result
 
 
 
