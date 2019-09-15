@@ -2,4 +2,7 @@
     source .venv/bin/activate
     pip install -r requirements.txt
 
+    python app.py
+
+
 localhost:8080/api/ui.
