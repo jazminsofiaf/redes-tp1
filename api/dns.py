@@ -1,38 +1,5 @@
 from flask import abort, make_response
-import dns.resolver
-import re
-
-ip_regex = r"\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b"
-
-"""
-def resolveDNS(hostname):
-    result = []
-    for answer in dns.resolver.query(hostname, "A").response.answer:
-        recodt_type = dns.rdatatype.to_text(answer.rdtype)
-        if(recodt_type != "A"):
-            continue
-        result.extend(re.findall(ip_regex, answer.to_text()))
-    return result
-"""
-
-def resolveDNS(hostname):
-    return [str(a) for a in dns.resolver.query(hostname)]
-
-
-def get_ips(hostname):
-    result = []
-    try:
-        result.extend(resolveDNS(hostname))
-    except dns.resolver.NXDOMAIN:
-        print("No such domain %s", hostname)
-    except dns.resolver.Timeout:
-        print("Timed out while resolving %s",hostname)
-    except dns.exception.DNSException as e:
-        print(" DNSException %s while resolving %s",e, hostname)
-    finally:
-        return result
-
-###############################################################################
+import api.resolver as resolver
 
 # Data to serve with our API
 domains = {
@@ -40,6 +7,15 @@ domains = {
         'domain': 'custom.domain',
         'ip':  '99.99.99.99',
         'custom': True
+    }
+}
+
+counter = {
+    'custom.domain':{
+        'ips': {
+            '99.99.99.99': 1,
+            '99.99.99.91': 0
+        }
     }
 }
 
@@ -66,11 +42,20 @@ def get_domain(domain):
     if(domain in domains.keys()):
         return make_response(domains[domain], 200)
 
-    ip_list = get_ips(domain)
+    ip_list = resolver.get_ips(domain)
     if not ip_list:
         return abort(404, 'domain not found')
 
-    ip = ip_list[0].strip()
+    ips_count = { ip: 0 for ip in ip_list }
+    if(domain in counter):
+        used_ips = counter[domain]
+        ips_count = { ip: used_ips[ip] if (ip in used_ips) else 0 for ip in ip_list }
+
+    ip = (min(ips_count, key=ips_count.get)).strip()
+    ips_count[ip] = max(ips_count.values()) + 1
+
+    print(ips_count)
+    counter[domain] = ips_count
     response  = {
         'domain': domain,
         'ip':  ip,
@@ -106,28 +91,27 @@ def new_custom_domain(**kwargs):
 
     return make_response(domain, 201)
 
-def update_custom_domain(**kwargs):
+def update_custom_domain(domain, **kwargs):
     """
     Esta funcion maneja el request PUT /api/custom-domains/{domain}
     :param: dominio a crear en la lista de custom domains
     :return: 201 dominio creado, 400 dominio duplicado
     """
+    domain_obj = kwargs.get('body')
+    domain_name = domain_obj.get('domain')
+    ip = domain_obj.get('ip')
 
-    domain = kwargs.get('body')
-    domain_name = domain.get('domain')
-    ip = domain.get('ip')
-
-    if not domain_name or not ip:
+    if not domain_name or not ip or domain_name != domain:
         return abort(400, 'payload is invalid')
 
     if not domain_name in domains.keys():
         return abort(404, 'domain not found')
 
 
-    domain['custom'] = True
-    domains[domain_name] = domain
+    domain_obj['custom'] = True
+    domains[domain_name] = domain_obj
 
-    return make_response(domain, 200)
+    return make_response(domain_obj, 200)
 
 def delete_custom_domain(domain):
         """Esta funcion maneja el request DELETE /api/custom-domains/{domain}
